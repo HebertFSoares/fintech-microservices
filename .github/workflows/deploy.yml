@@ -14,12 +14,21 @@ jobs:
 
     strategy:
       matrix:
-        service:
-          - gateway
-          - AuthService
-          - AccountService
-          - transferService
-          - notificationService
+        include:
+          - service: gateway
+            image: api-gateway
+
+          - service: AuthService
+            image: auth-service
+
+          - service: AccountService
+            image: account-service
+
+          - service: transferService
+            image: transfer-service
+
+          - service: notificationService
+            image: notification-service
 
     steps:
       - name: Checkout
@@ -37,8 +46,8 @@ jobs:
 
       - name: Build
         run: |
-          docker build -t $ECR_REGISTRY/fintech/${{ matrix.service }}:${{ github.sha }} ./${{ matrix.service }}
+          docker build -t $ECR_REGISTRY/fintech/${{ matrix.image }}:${{ github.sha }} ./${{ matrix.service }}
 
       - name: Push
         run: |
-          docker push $ECR_REGISTRY/fintech/${{ matrix.service }}:${{ github.sha }}
+          docker push $ECR_REGISTRY/fintech/${{ matrix.image }}:${{ github.sha }}
