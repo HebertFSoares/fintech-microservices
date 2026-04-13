@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transfer-service
+  namespace: fintech
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transfer-service
+  template:
+    metadata:
+      labels:
+        app: transfer-service
+    spec:
+      containers:
+        - name: transfer-service
+          image: transfer-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8083
+          envFrom:
+            - configMapRef:
+                name: fintech-config
+            - secretRef:
+                name: fintech-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transfer-service
+  namespace: fintech
+spec:
+  selector:
+    app: transfer-service
+  ports:
+    - port: 8083
+      targetPort: 8083

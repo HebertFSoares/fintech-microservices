@@ -1,0 +1,133 @@
+version: '3.9'
+
+services:
+
+  # ─── INFRA ────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: fintech-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: accountdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - fintech-net
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: fintech-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - fintech-net
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: fintech-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fintech-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: fintech-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - fintech-net
+
+  # ─── SERVIÇOS ─────────────────────────────────────
+
+  auth-service:
+    build: ./authservice
+    container_name: fintech-auth
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      KAFKA_SERVERS: kafka:9092
+      JWT_SECRET: supersecretkeyprojectfera0903200414032026
+    networks:
+      - fintech-net
+
+  account-service:
+    build: ./accountService
+    container_name: fintech-account
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      DB_HOST: postgres
+      KAFKA_SERVERS: kafka:9092
+    networks:
+      - fintech-net
+
+  transfer-service:
+    build: ./transferService
+    container_name: fintech-transfer
+    ports:
+      - "8083:8083"
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      KAFKA_SERVERS: kafka:9092
+    networks:
+      - fintech-net
+
+  notification-service:
+    build: ./notificationService
+    container_name: fintech-notification
+    ports:
+      - "8085:8085"
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_SERVERS: kafka:9092
+    networks:
+      - fintech-net
+
+  api-gateway:
+    build: ./gateway
+    container_name: fintech-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - account-service
+      - transfer-service
+      - redis
+    environment:
+      REDIS_HOST: redis
+      JWT_SECRET: supersecretkeyprojectfera0903200414032026
+    networks:
+      - fintech-net
+
+networks:
+  fintech-net:
+    driver: bridge
