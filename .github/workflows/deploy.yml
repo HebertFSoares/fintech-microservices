@@ -15,11 +15,11 @@ jobs:
     strategy:
       matrix:
         service:
-          - api-gateway
-          - auth-service
-          - account-service
-          - transfer-service
-          - notification-service
+          - gateway
+          - AuthService
+          - AccountService
+          - transferService
+          - notificationService
 
     steps:
       - name: Checkout
