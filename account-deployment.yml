@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: account-service
-          image: account-service:latest
+          image: 608420805829.dkr.ecr.us-east-1.amazonaws.com/fintech/account-service:918ad3c2628f09977c6e4ee40d156958c0ffcfa3
           imagePullPolicy: Never
           ports:
             - containerPort: 8082

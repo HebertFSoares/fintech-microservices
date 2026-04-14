@@ -75,13 +75,21 @@ jobs:
 
       - name: Conectar no EKS
         run: |
-          aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
+          aws eks update-kubeconfig --region $AWS_REGION --name fintech-cluster
 
-      - name: Deploy base (configmap/secret)
+      - name: Criar base (namespace + config)
         run: |
           kubectl apply -f namespace.yml
           kubectl apply -f configmap.yml
           kubectl apply -f secret.yml
+
+      - name: Criar deployments
+        run: |
+          kubectl apply -f auth-deployment.yml
+          kubectl apply -f account-deployment.yml
+          kubectl apply -f transfer-deployment.yml
+          kubectl apply -f notification-deployment.yml
+          kubectl apply -f gateway-deployment.yml
 
       - name: Atualizar imagens
         run: |
