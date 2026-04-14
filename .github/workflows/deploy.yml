@@ -75,7 +75,7 @@ jobs:
 
       - name: Conectar no EKS
         run: |
-          aws eks update-kubeconfig --region $AWS_REGION --name fintech-cluster
+          aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
 
       - name: Criar base (namespace + config)
         run: |
@@ -83,13 +83,28 @@ jobs:
           kubectl apply -f configmap.yml
           kubectl apply -f secret.yml
 
+      - name: Criar infraestrutura
+        run: |
+          kubectl apply -f kafka-deployment.yml -n fintech
+          kubectl apply -f postgres-deployment.yml -n fintech
+          kubectl apply -f redis-deployment.yml -n fintech
+
+      - name: Aguardar infra
+        run: |
+          kubectl rollout status deployment/postgres -n fintech
+          kubectl rollout status deployment/kafka -n fintech
+          kubectl rollout status deployment/redis -n fintech
+          
+          echo "Aguardando serviços estabilizarem..."
+          sleep 20
+
       - name: Criar deployments
         run: |
-          kubectl apply -f auth-deployment.yml
-          kubectl apply -f account-deployment.yml
-          kubectl apply -f transfer-deployment.yml
-          kubectl apply -f notification-deployment.yml
-          kubectl apply -f gateway-deployment.yml
+          kubectl apply -f auth-deployment.yml -n fintech
+          kubectl apply -f account-deployment.yml -n fintech
+          kubectl apply -f transfer-deployment.yml -n fintech
+          kubectl apply -f notification-deployment.yml -n fintech
+          kubectl apply -f gateway-deployment.yml -n fintech
 
       - name: Atualizar imagens
         run: |
