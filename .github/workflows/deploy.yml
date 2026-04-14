@@ -7,6 +7,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REGISTRY: 608420805829.dkr.ecr.us-east-1.amazonaws.com
+  CLUSTER_NAME: fintech-cluster
 
 jobs:
   build-and-push:
@@ -17,18 +18,23 @@ jobs:
         include:
           - service: gateway
             image: api-gateway
+            deployment: api-gateway
 
           - service: AuthService
             image: auth-service
+            deployment: auth-service
 
           - service: AccountService
             image: account-service
+            deployment: account-service
 
           - service: transferService
             image: transfer-service
+            deployment: transfer-service
 
           - service: notificationService
             image: notification-service
+            deployment: notification-service
 
     steps:
       - name: Checkout
@@ -51,3 +57,36 @@ jobs:
       - name: Push
         run: |
           docker push $ECR_REGISTRY/fintech/${{ matrix.image }}:${{ github.sha }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Conectar no EKS
+        run: |
+          aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
+
+      - name: Deploy base (configmap/secret)
+        run: |
+          kubectl apply -f namespace.yml
+          kubectl apply -f configmap.yml
+          kubectl apply -f secret.yml
+
+      - name: Atualizar imagens
+        run: |
+          kubectl set image deployment/auth-service auth-service=$ECR_REGISTRY/fintech/auth-service:${{ github.sha }} -n fintech
+          kubectl set image deployment/account-service account-service=$ECR_REGISTRY/fintech/account-service:${{ github.sha }} -n fintech
+          kubectl set image deployment/transfer-service transfer-service=$ECR_REGISTRY/fintech/transfer-service:${{ github.sha }} -n fintech
+          kubectl set image deployment/notification-service notification-service=$ECR_REGISTRY/fintech/notification-service:${{ github.sha }} -n fintech
+          kubectl set image deployment/api-gateway api-gateway=$ECR_REGISTRY/fintech/api-gateway:${{ github.sha }} -n fintech
