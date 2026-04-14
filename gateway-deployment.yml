@@ -16,7 +16,7 @@ spec:
       containers:
         - name: api-gateway
           image: 608420805829.dkr.ecr.us-east-1.amazonaws.com/fintech/api-gateway:918ad3c2628f09977c6e4ee40d156958c0ffcfa3
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           envFrom:
