@@ -98,6 +98,19 @@ jobs:
           echo "Aguardando serviços estabilizarem..."
           sleep 20
 
+      - name: Criar observabilidade
+        run: |
+          kubectl apply -f prometheus-configmap.yml -n fintech
+          kubectl apply -f prometheus-deployment.yml -n fintech
+          kubectl apply -f prometheus-service.yml -n fintech
+          kubectl apply -f grafana-deployment.yml -n fintech
+          kubectl apply -f grafana-service.yml -n fintech
+
+      - name: Aguardar observabilidade
+        run: |
+          kubectl rollout status deployment/prometheus -n fintech
+          kubectl rollout status deployment/grafana -n fintech
+
       - name: Criar deployments
         run: |
           kubectl apply -f auth-deployment.yml -n fintech
