@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: fintech
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 5s
+
+    scrape_configs:
+      - job_name: 'microservices'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets:
+              - auth-service:8081
+              - account-service:8082
+              - transfer-service:8083
+              - notification-service:8085

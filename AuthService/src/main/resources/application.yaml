@@ -30,3 +30,12 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET:supersecretkeyprojectfera0903200414032026}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,health,info
+  endpoint:
+    prometheus:
+      enabled: true
