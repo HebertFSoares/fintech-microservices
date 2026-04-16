@@ -7,7 +7,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REGISTRY: 608420805829.dkr.ecr.us-east-1.amazonaws.com
-  CLUSTER_NAME: scrumptious-classical-crow
+  CLUSTER_NAME: fintech-cluster
 
 jobs:
   build-and-push:
