@@ -7,7 +7,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REGISTRY: 608420805829.dkr.ecr.us-east-1.amazonaws.com
-  CLUSTER_NAME: fintech-cluster
+  CLUSTER_NAME: scrumptious-classical-crow
 
 jobs:
   build-and-push:
@@ -79,15 +79,15 @@ jobs:
 
       - name: Criar base (namespace + config)
         run: |
-          kubectl apply -f namespace.yml
-          kubectl apply -f configmap.yml
-          kubectl apply -f secret.yml
+          kubectl apply -f k8s/namespace.yml
+          kubectl apply -f k8s/configmap.yml
+          kubectl apply -f k8s/secret.yml
 
       - name: Criar infraestrutura
         run: |
-          kubectl apply -f kafka-deployment.yml -n fintech
-          kubectl apply -f postgres-deployment.yml -n fintech
-          kubectl apply -f redis-deployment.yml -n fintech
+          kubectl apply -f k8s/kafka-deployment.yml -n fintech
+          kubectl apply -f k8s/postgres-deployment.yml -n fintech
+          kubectl apply -f k8s/redis-deployment.yml -n fintech
 
       - name: Aguardar infra
         run: |
@@ -113,11 +113,11 @@ jobs:
 
       - name: Criar deployments
         run: |
-          kubectl apply -f auth-deployment.yml -n fintech
-          kubectl apply -f account-deployment.yml -n fintech
-          kubectl apply -f transfer-deployment.yml -n fintech
-          kubectl apply -f notification-deployment.yml -n fintech
-          kubectl apply -f gateway-deployment.yml -n fintech
+          kubectl apply -f k8s/auth-deployment.yml -n fintech
+          kubectl apply -f k8s/account-deployment.yml -n fintech
+          kubectl apply -f k8s/transfer-deployment.yml -n fintech
+          kubectl apply -f k8s/notification-deployment.yml -n fintech
+          kubectl apply -f k8s/gateway-deployment.yml -n fintech
 
       - name: Atualizar imagens
         run: |
