@@ -29,7 +29,7 @@ spring:
       port: ${REDIS_PORT:6379}
 
 jwt:
-  secret: ${JWT_SECRET:supersecretkeyprojectfera0903200414032026}
+  secret: ${JWT_SECRET}
 
 management:
   endpoints:

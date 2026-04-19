@@ -14,3 +14,8 @@ target/
 
 # Kubernetes secrets
 secret.yml
+
+# Docker / scripts locais
+docker-compose.yml
+start-cluster.ps1
+stop-cluster.ps1

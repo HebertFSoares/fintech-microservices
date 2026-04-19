@@ -22,9 +22,15 @@ spec:
             - name: POSTGRES_DB
               value: accountdb
             - name: POSTGRES_USER
-              value: postgres
+              valueFrom:
+                secretKeyRef:
+                  name: fintech-secret
+                  key: DB_USER
             - name: POSTGRES_PASSWORD
-              value: postgres
+              valueFrom:
+                secretKeyRef:
+                  name: fintech-secret
+                  key: DB_PASS
 
 ---
 apiVersion: v1
