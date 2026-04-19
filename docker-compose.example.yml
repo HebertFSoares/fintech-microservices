@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: fintech-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: accountdb
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    networks:
+      - fintech-net
+
+  auth-service:
+    build: ./authservice
+    container_name: fintech-auth
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      KAFKA_SERVERS: kafka:9092
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - fintech-net
+
+  api-gateway:
+    build: ./gateway
+    container_name: fintech-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - account-service
+      - transfer-service
+      - redis
+    environment:
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - fintech-net
